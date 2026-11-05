@@ -26,7 +26,6 @@ The generated video and infographic are stored in Supabase, while job status and
 - [Challenges Encountered](#challenges-encountered)
 - [Future Improvements](#future-improvements)
 - [Security Notes](#security-notes)
-- [License](#license)
 
 ## Project Showcase
 
