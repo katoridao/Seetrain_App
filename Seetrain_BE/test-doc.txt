@@ -1,0 +1,45 @@
+# Cybersecurity Basics: How to Stay Safe Online
+
+## 1. Introduction
+
+Cybersecurity protects computers, devices, networks,
+and personal information from digital attacks.
+
+People use the internet for communication, shopping,
+banking, and work.
+
+## 2. Common Online Threats
+
+- Phishing uses fake messages to steal personal information.
+- Malware is harmful software that can damage devices.
+- Weak passwords make accounts easier to attack.
+- Fake websites imitate trusted services.
+
+## 3. Strong Passwords
+
+- Use at least 12 characters.
+- Combine uppercase and lowercase letters.
+- Include numbers and special symbols.
+- Avoid reusing passwords.
+- Use a trusted password manager.
+
+## 4. Safe Internet Browsing
+
+- Check website addresses.
+- Avoid suspicious links.
+- Keep software updated.
+- Download applications from trusted sources.
+- Avoid sensitive activities on public Wi-Fi.
+
+## 5. Protect Your Accounts
+
+- Enable Two-Factor Authentication.
+- Install security updates.
+- Use antivirus software.
+- Lock your devices.
+- Back up important files.
+
+## 6. Conclusion
+
+Stay alert, use strong passwords,
+and protect your personal information online.
