@@ -6,7 +6,6 @@ const cors = require("cors");
 const uploadRouter = require("./routes/upload");
 const jobsRouter = require("./routes/jobs");
 const historyRouter = require("./routes/history");
-const didRouter = require("./routes/did");
 
 const supabase = require("./config/supabase");
 
@@ -20,7 +19,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/upload", uploadRouter);
 app.use("/jobs", jobsRouter);
 app.use("/history", historyRouter);
-app.use("/did", didRouter);
 
 app.get("/health", (req, res) => {
   res.status(200).json({

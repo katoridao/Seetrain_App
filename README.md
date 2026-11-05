@@ -4,20 +4,53 @@ SeeTrain is an Android application that turns PDF, DOC, DOCX, and text training 
 
 The generated video and infographic are stored in Supabase, while job status and history are retrieved through REST APIs from the Android app.
 
+## Table of Contents
+
+- [Project Showcase](#project-showcase)
+- [Architecture Overview](#architecture-overview)
+- [Components](#components)
+  - [Android application](#android-application)
+  - [Backend service](#backend-service)
+  - [Data and storage](#data-and-storage)
+- [Processing Flow](#processing-flow)
+- [AI Tools and Services](#ai-tools-and-services)
+- [Repository Structure](#repository-structure)
+- [Android Setup](#android-setup)
+  - [Requirements](#requirements)
+  - [Run the Android app](#run-the-android-app)
+- [Backend Setup](#backend-setup)
+  - [Install and run](#install-and-run)
+- [Supabase Setup](#supabase-setup)
+- [Backend API](#backend-api)
+- [Technical Decisions](#technical-decisions)
+- [Challenges Encountered](#challenges-encountered)
+- [Future Improvements](#future-improvements)
+- [Security Notes](#security-notes)
+- [License](#license)
+
 ## Project Showcase
 
-| Experience | Description |
-|---|---|
-| Document upload | Choose a supported document from the Android Storage Access Framework picker |
-| AI lesson planning | Convert source text into concise, structured training sections |
-| AI illustrations | Generate visuals for each section |
-| Training video | Add narration and section titles, then encode the final MP4 |
-| Infographic | Render a portrait PNG from the same training content |
-| Job progress | Show processing stages while Android polls for updates |
-| History | Review completed materials and reopen or download their outputs |
-| Result viewer | Preview videos and infographics in full-screen dialogs |
+| Experience         | Description                                                                  |
+| ------------------ | ---------------------------------------------------------------------------- |
+| Document upload    | Choose a supported document from the Android Storage Access Framework picker |
+| AI lesson planning | Convert source text into concise, structured training sections               |
+| AI illustrations   | Generate visuals for each section                                            |
+| Training video     | Add narration and section titles, then encode the final MP4                  |
+| Infographic        | Render a portrait PNG from the same training content                         |
+| Job progress       | Show processing stages while Android polls for updates                       |
+| History            | Review completed materials and reopen or download their outputs              |
+| Result viewer      | Preview videos and infographics in full-screen dialogs                       |
 
-## System Overview
+## Architecture Overview
+
+SeeTrain uses a two-layer architecture with a native Android client and an Express backend:
+
+- **Android client:** Jetpack Compose screens invoke ViewModels, repositories convert UI actions into Retrofit requests, and Media3 plus Android DownloadManager handle playback and downloads.
+- **Backend API:** Express validates uploads, persists jobs, extracts document text, plans training content, generates media, and stores results in Supabase.
+- **Processing model:** Upload requests return HTTP `202 Accepted`; document extraction and media generation continue asynchronously while the Android app polls job status.
+- **External AI services:** Groq plans the lesson structure, Stability AI produces illustrations, and ElevenLabs generates narration.
+- **Local media generation:** Sharp renders slide overlays, Puppeteer exports the infographic, and FFmpeg combines narration with slides into the final MP4.
+- **Data and media storage:** Supabase stores job metadata and original/generated files. Job responses expose short-lived signed URLs for the Android client.
 
 ```mermaid
 flowchart LR
@@ -84,7 +117,6 @@ The `Seetrain_BE` module is an Express CommonJS service responsible for:
 - Illustration, narration, video, and infographic generation
 - Supabase uploads and signed URL delivery
 - Job history lookup
-- Optional D-ID connection testing
 
 The backend accepts documents up to 20 MB and returns HTTP `202 Accepted` with a UUID after creating a job.
 
@@ -116,18 +148,16 @@ Supabase provides:
 
 ## AI Tools and Services
 
-| Service | Project usage |
-|---|---|
-| Groq | Creates strict, structured training content from extracted text using `openai/gpt-oss-20b` |
-| Stability AI | Generates educational illustrations for video slides and the infographic |
-| ElevenLabs | Generates section narration audio |
-| FFmpeg | Combines narration and slide content into the final MP4 |
-| Sharp | Resizes images and composites titles and key points |
-| Puppeteer | Renders infographic HTML in Chromium and exports PNG |
-| Google Gemini | Auxiliary script-generation module; not the primary upload pipeline |
-| D-ID | Auxiliary connection, presenter, and clip modules; not the primary video pipeline |
+| Service      | Project usage                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| Groq         | Creates strict, structured training content from extracted text using `openai/gpt-oss-20b` |
+| Stability AI | Generates educational illustrations for video slides and the infographic                   |
+| ElevenLabs   | Generates section narration audio                                                          |
+| FFmpeg       | Combines narration and slide content into the final MP4                                    |
+| Sharp        | Resizes images and composites titles and key points                                        |
+| Puppeteer    | Renders infographic HTML in Chromium and exports PNG                                       |
 
-The main upload pipeline uses Groq, Stability AI, ElevenLabs, FFmpeg, Sharp, and Puppeteer. Gemini, D-ID, and Google Cloud Text-to-Speech integration code are present as auxiliary capabilities but are not required by the standard document-generation flow.
+The main upload pipeline uses Groq, Stability AI, ElevenLabs, FFmpeg, Sharp, and Puppeteer.
 
 ## Repository Structure
 
@@ -146,11 +176,10 @@ Seetrain_App/
 │
 ├── Seetrain_BE/               # Express backend
 │   ├── src/
-│   │   ├── config/            # Supabase and auxiliary AI configuration
+│   │   ├── config/            # Supabase configuration
 │   │   ├── routes/            # HTTP routes
 │   │   └── services/          # Extraction, generation, and storage services
-│   ├── package.json
-│   └── README.md
+│   └── package.json
 │
 └── README.md                  # Project-wide showcase documentation
 ```
@@ -220,11 +249,6 @@ STABILITY_API_KEY=your-stability-key
 ELEVENLABS_API_KEY=your-elevenlabs-key
 ELEVENLABS_VOICE_ID=your-elevenlabs-voice-id
 ELEVENLABS_MODEL_ID=eleven_multilingual_v2
-
-# Optional auxiliary integrations
-GEMINI_API_KEY=your-gemini-key
-DID_API_KEY=your-did-key
-DID_PRESENTER_ID=your-did-presenter-id
 ```
 
 Never commit real values or expose server secrets in the Android application.
@@ -248,15 +272,13 @@ Configure server-side storage access and database permissions separately. The AP
 
 ## Backend API
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| `GET` | `/health` | Health check |
-| `GET` | `/test-supabase` | Verify Supabase database access |
-| `POST` | `/upload` | Upload a document and create an async job |
-| `GET` | `/jobs/:id` | Retrieve status and signed result URLs |
-| `GET` | `/history` | Retrieve completed jobs |
-| `GET` | `/did/test` | Test auxiliary D-ID connectivity |
-| `GET` | `/did/avatars` | List auxiliary D-ID presenters |
+| Method | Endpoint         | Purpose                                   |
+| ------ | ---------------- | ----------------------------------------- |
+| `GET`  | `/health`        | Health check                              |
+| `GET`  | `/test-supabase` | Verify Supabase database access           |
+| `POST` | `/upload`        | Upload a document and create an async job |
+| `GET`  | `/jobs/:id`      | Retrieve status and signed result URLs    |
+| `GET`  | `/history`       | Retrieve completed jobs                   |
 
 Example upload:
 
@@ -278,36 +300,22 @@ curl -X POST http://localhost:3000/upload \
 - **FFmpeg and Puppeteer** provide a deterministic local media-generation pipeline without additional rendering microservices.
 - **Poll-based status updates** match the current lightweight architecture and avoid adding a real-time transport dependency.
 
-## Challenges
+## Challenges Encountered
 
-- AI providers can return malformed data, time out, or run out of credits.
-- A complete generation job combines several external services and CPU-heavy local media tools.
-- Temporary media must be cleaned up correctly after success and partial failure.
-- Section clips must have compatible dimensions, codecs, frame rates, and audio settings.
-- Long-running work currently lives inside the Express process and is lost if the server restarts.
-- The Android app currently uses a fixed LAN IP and cleartext HTTP, which must be replaced for deployment.
-- History is global because the current backend does not implement user identity or job ownership.
-- The app has no authentication, route authorization, upload rate limiting, or retry queue.
-- Signed URLs may expire while a user leaves the app or result screen open.
+- AI models may return invalid JSON or inconsistent content.
+- AI-generated illustrations may not accurately match the document content.
+- External AI APIs may experience timeouts, rate limits, or credit limitations.
+- Coordinating multiple AI services into one reliable generation pipeline is challenging.
+- Synchronizing narration, images, and text while keeping the video under five minutes.
+- Supabase signed URLs may expire while users are viewing generated results.
 
 ## Future Improvements
 
-- Add user authentication and per-user job history
-- Replace the fixed LAN URL with BuildConfig values or environment-based configuration
-- Use HTTPS and server-specific API configuration
-- Move processing to durable queues and dedicated workers
-- Add automatic retries, exponential backoff, and provider fallbacks
-- Stream progress over WebSockets or Server-Sent Events
-- Add OCR for scanned or image-only PDFs
-- Support cancellation and resume of generation jobs
-- Add prompt, voice, duration, aspect ratio, theme, and language controls
-- Add unit, integration, and end-to-end tests
-- Add provider usage, generation cost, duration, and failure telemetry
-- Generate a downloadable or shareable training package
-- Add cloud deployment, CI/CD, containerization, and infrastructure configuration
-- Add OpenAPI documentation and Android contract tests
-- Apply storage lifecycle rules and signed-media refresh
-- Add accessibility improvements and localization
+- Implement user authentication and user-specific generation history.
+- Deploy the backend with HTTPS and a configurable API URL.
+- Improve AI-generated content and illustrations for better accuracy and consistency.
+- Add subtitles, animations, and more video customization options.
+- Optimize media generation to reduce processing time and resource usage.
 
 ## Security Notes
 
