@@ -26,7 +26,6 @@ The generated video and infographic are stored in Supabase, while job status and
 - [Challenges Encountered](#challenges-encountered)
 - [Future Improvements](#future-improvements)
 - [Security Notes](#security-notes)
-- [License](#license)
 
 ## Project Showcase
 
@@ -322,11 +321,3 @@ curl -X POST http://localhost:3000/upload \
 - Keep API keys and Supabase server credentials in `.env` only.
 - Do not place Supabase service credentials or AI keys in Android resources.
 - Do not commit generated uploads, credentials, service account files, or local media.
-- Use HTTPS and authentication before exposing the API publicly.
-- Apply job ownership checks before serving status, history, source text, or generated media.
-- Limit file size, MIME types, concurrency, and anonymous request volume.
-- Rotate any credential that has been committed, copied into logs, or shared outside the development environment.
-
-## License
-
-License information has not yet been defined for this project.
